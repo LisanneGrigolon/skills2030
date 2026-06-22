@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construindo o Time de 2030 — Sondagem de Capacidades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cosmos:   #0A0F1E;
+  --night:    #0D1F35;
+  --card:     #112338;
+  --cyan:     #0FA4A4;
+  --cyan-dim: rgba(15,164,164,.15);
+  --ice:      #F0F4FF;
+  --muted:    #7A9BB5;
+  --border:   rgba(15,164,164,.2);
+  --border-w: rgba(255,255,255,.08);
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--cosmos);
+  color: var(--ice);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── CANVAS PARTICLES ── */
+#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .45;
+}
+
+/* ── HORIZON PROGRESS ── */
+.hz {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0;
+  transition: opacity .4s;
+  z-index: 100;
+}
+.hz.on { opacity: 1; }
+.hf {
+  height: 100%;
+  background: var(--cyan);
+  width: 0%;
+  transition: width .55s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 14px var(--cyan);
+}
+
+/* ── LAYOUT ── */
+.wrap {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+.card-shell {
+  background: rgba(13,31,53,.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-w);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 620px;
+  padding: 2.5rem 2.5rem 2rem;
+}
+@media (max-width: 520px) {
+  .card-shell { padding: 1.75rem 1.25rem 1.5rem; border-radius: 14px; }
+}
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp .3s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.logo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--cyan);
+  text-transform: uppercase;
+}
+.stepctr {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .05em;
+}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: .75rem;
+}
+.hero {
+  font-size: clamp(26px, 6vw, 32px);
+  font-weight: 700;
+  color: var(--ice);
+  line-height: 1.15;
+  margin-bottom: .6rem;
+  letter-spacing: -.025em;
+}
+.hero-sub {
+  font-size: 14px;
+  color: var(--cyan);
+  font-weight: 500;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+.body-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+}
+.qnum {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: .7rem;
+}
+.qtext {
+  font-size: clamp(15px, 4vw, 17px);
+  font-weight: 500;
+  color: var(--ice);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+  letter-spacing: -.01em;
+}
+
+/* ── STRIP ── */
+.strip {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--cyan-dim);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: .85rem;
+}
+.strip-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.strip-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.strip-text strong { color: var(--ice); font-weight: 500; }
+
+/* ── SCALE INTRO ── */
+.scale-intro {
+  margin-bottom: 1.5rem;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.04);
+  border-radius: 10px;
+  border: 1px solid var(--border-w);
+}
+.scale-intro-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── FORM CONTROLS ── */
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  margin-top: 14px;
+  display: block;
+}
+select {
+  width: 100%;
+  padding: 11px 40px 11px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: rgba(255,255,255,.05);
+  color: var(--ice);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A9BB5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+select option { background: #0D1F35; color: var(--ice); }
+select:focus { outline: none; border-color: var(--cyan); }
+
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: rgba(255,255,255,.04);
+  color: var(--ice);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 90px;
+  font-family: 'Inter', sans-serif;
+}
+textarea::placeholder { color: rgba(122,155,181,.5); }
+textarea:focus { outline: none; border-color: var(--cyan); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 24px;
+  border-radius: 8px;
+  border: none;
+  background: var(--cyan);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .02em;
+  transition: background .15s, transform .1s;
+  font-family: 'Inter', sans-serif;
+  text-decoration: none;
+}
+.btn:hover { background: #12C2C2; }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-w);
+  color: var(--muted);
+}
+.btn-ghost:hover { border-color: rgba(255,255,255,.28); color: var(--ice); background: transparent; }
+.btn-sm { padding: 8px 16px; font-size: 12px; }
+
+/* ── DOT PROGRESS ── */
+.pg-dots {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  transition: background .2s;
+}
+.dot.done  { background: var(--cyan); }
+.dot.cur   { background: var(--ice); }
+.dot.spec  { background: rgba(15,164,164,.4); outline: 1px solid rgba(15,164,164,.7); outline-offset: 1px; }
+
+/* ── LIKERT OPTIONS ── */
+.lopts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+.lopt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: rgba(255,255,255,.03);
+  cursor: pointer;
+  transition: all .13s;
+  user-select: none;
+}
+.lopt:hover { border-color: rgba(15,164,164,.38); background: rgba(15,164,164,.07); }
+.lopt.sel  { border-color: var(--cyan); background: rgba(15,164,164,.13); border-width: 1.5px; }
+.ldot-wrap {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,.2);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .13s;
+}
+.lopt.sel .ldot-wrap { border-color: var(--cyan); background: var(--cyan); }
+.ldot-inner {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transition: opacity .13s;
+}
+.lopt.sel .ldot-inner { opacity: 1; }
+.llbl { font-size: 13px; color: var(--muted); flex: 1; transition: color .13s; }
+.lopt.sel .llbl { color: var(--ice); }
+.scale-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: rgba(122,155,181,.45);
+  margin-bottom: 1.75rem;
+  padding: 0 4px;
+}
+
+/* ── REACTION OPTIONS ── */
+.react-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.04);
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+}
+.ropts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.75rem; }
+.ropt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: rgba(255,255,255,.03);
+  cursor: pointer;
+  transition: all .13s;
+  user-select: none;
+}
+.ropt:hover { border-color: rgba(15,164,164,.38); background: rgba(15,164,164,.07); }
+.ropt.sel  { border-color: var(--cyan); background: rgba(15,164,164,.13); border-width: 1.5px; }
+.rltr {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 18px;
+  margin-top: 1px;
+  letter-spacing: .05em;
+  transition: color .13s;
+  flex-shrink: 0;
+}
+.ropt.sel .rltr { color: var(--cyan); }
+.rtxt { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; transition: color .13s; }
+.ropt.sel .rtxt { color: var(--ice); }
+
+/* ── FORCED CHOICE ── */
+.fc-ctx {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  background: var(--cyan-dim);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 1.25rem;
+}
+.fc-stem {
+  font-size: clamp(15px, 4vw, 17px);
+  font-weight: 500;
+  color: var(--ice);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+  letter-spacing: -.01em;
+}
+.fcopts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.75rem; }
+.fcopt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: rgba(255,255,255,.03);
+  cursor: pointer;
+  transition: all .13s;
+  user-select: none;
+}
+.fcopt:hover { border-color: rgba(15,164,164,.38); background: rgba(15,164,164,.07); }
+.fcopt.sel  { border-color: var(--cyan); background: rgba(15,164,164,.13); border-width: 1.5px; }
+.fcltr {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 18px;
+  margin-top: 1px;
+  transition: color .13s;
+  letter-spacing: .05em;
+}
+.fcopt.sel .fcltr { color: var(--cyan); }
+.fctxt { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; transition: color .13s; }
+.fcopt.sel .fctxt { color: var(--ice); }
+
+/* ── NAV ROW ── */
+.nav { display: flex; align-items: center; gap: 10px; margin-top: .25rem; }
+.nhint { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+/* ── SKILL CHIPS ── */
+.sk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+.sk-chip {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: rgba(255,255,255,.04);
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .13s;
+  user-select: none;
+}
+.sk-chip:hover { border-color: rgba(15,164,164,.4); background: rgba(15,164,164,.07); color: var(--ice); }
+.sk-chip.sel   { border-color: var(--cyan); background: rgba(15,164,164,.15); color: var(--ice); border-width: 1.5px; font-weight: 500; }
+
+/* ── RESULT ── */
+.r-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.r-sc {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border-w);
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.r-scv { font-size: 24px; font-weight: 700; margin-bottom: 3px; color: var(--cyan); }
+.r-scl { font-size: 11px; color: var(--muted); }
+.r-list {
+  border: 1px solid var(--border-w);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.r-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+}
+.r-row:nth-child(odd)  { background: rgba(255,255,255,.02); }
+.r-row:nth-child(even) { background: rgba(255,255,255,.045); }
+.r-sname { font-size: 12px; font-weight: 500; color: var(--ice); flex: 1; }
+.r-bw { width: 90px; height: 5px; background: rgba(255,255,255,.08); border-radius: 3px; flex-shrink: 0; }
+.r-b  { height: 5px; border-radius: 3px; background: var(--cyan); }
+.r-val { font-size: 12px; font-weight: 700; min-width: 28px; text-align: right; flex-shrink: 0; color: var(--cyan); }
+.r-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  background: rgba(15,164,164,.12);
+  color: var(--cyan);
+  border: 1px solid rgba(15,164,164,.25);
+}
+.r-tag.low { background: rgba(122,155,181,.1); color: var(--muted); border-color: rgba(122,155,181,.2); }
+.r-tag.mid { background: rgba(122,155,181,.07); color: rgba(122,155,181,.8); border-color: rgba(122,155,181,.15); }
+.r-note {
+  border-left: 2px solid var(--cyan);
+  padding: 10px 14px;
+  background: var(--cyan-dim);
+  border-radius: 0 8px 8px 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.r-note strong { color: var(--ice); font-weight: 500; }
+
+/* ── COPY BOX ── */
+.copy-box {
+  background: var(--cyan-dim);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: .75rem;
+}
+.copy-title { font-size: 14px; font-weight: 600; color: var(--ice); margin-bottom: 4px; }
+.copy-body  { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+.copy-preview {
+  background: rgba(0,0,0,.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255,255,255,.06);
+  max-height: 150px;
+  overflow: hidden;
+  position: relative;
+}
+.copy-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(transparent, rgba(10,15,30,.95));
+}
+.copy-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-copy { display: inline-flex; align-items: center; gap: 7px; }
+.btn-copy.copied { background: #1A9E75; }
+.btn-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-w);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all .15s;
+  text-decoration: none;
+}
+.btn-email:hover { border-color: rgba(255,255,255,.28); color: var(--ice); }
+
+/* ── SENT SCREEN ── */
+.check-circle {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--cyan-dim);
+  border: 2px solid var(--cyan);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 1.25rem;
+}
+.sent-steps {
+  background: var(--cyan-dim);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  max-width: 340px;
+  margin: 0 auto 1.25rem;
+}
+.sent-step { font-size: 13px; color: var(--muted); line-height: 1.9; }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="hz" id="hz"><div class="hf" id="hf"></div></div>
+
+<div class="wrap">
+<div class="card-shell">
+
+<!-- ══ INTRO ══ -->
+<div class="screen active" id="s-intro">
+  <div class="topbar">
+    <div class="logo">Skills 2030</div>
+    <div class="stepctr">WEF Future of Jobs · Jan 2025</div>
+  </div>
+  <div class="eyebrow">Sondagem de capacidades</div>
+  <div class="hero">Construindo<br>o time<br>de 2030</div>
+  <div class="hero-sub">Uma sondagem sobre as capacidades do futuro — baseada no WEF Future of Jobs 2025</div>
+  <div class="body-text">Uma série de afirmações e situações sobre o dia a dia profissional. Responda com o que de fato acontece — não com o que seria o ideal.</div>
+  <div class="strip">
+    <span class="strip-icon">🔒</span>
+    <div class="strip-text"><strong>Seus dados individuais não são compartilhados com gestores.</strong> O RH receberá apenas médias agregadas por grupo profissional. O objetivo é entender onde investir para crescer juntos — não avaliar performance de ninguém.</div>
+  </div>
+  <div class="strip">
+    <span class="strip-icon">ℹ️</span>
+    <div class="strip-text">O WEF aponta que profissionais experientes em todas as funções apresentam lacunas nos skills que mais crescem em importância. <strong>Não existe resposta certa ou errada</strong> — a mais útil é a mais honesta.</div>
+  </div>
+  <div class="scale-intro">
+    <div class="scale-intro-title">Como funciona a escala de resposta</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">
+      Para cada afirmação, você indicará com que <strong style="color:var(--ice);font-weight:500">frequência</strong> ela descreve o que acontece na prática — de <strong style="color:var(--ice);font-weight:500">nunca ou quase nunca</strong> até <strong style="color:var(--ice);font-weight:500">sempre ou quase sempre</strong>.<br><br>
+      Algumas perguntas apresentarão situações com alternativas de comportamento — escolha a que mais se aproxima do que costuma fazer.
+    </div>
+  </div>
+  <label class="field-label" for="m-role">Sua função no time</label>
+  <select id="m-role">
+    <option value="">Selecione...</option>
+    <option>Avaliador(a) de Fragrância</option>
+    <option>Marketeiro(a) de Fragrância</option>
+    <option>Consumer Insights</option>
+    <option>Atendimento CPG</option>
+    <option>Liderança / Gestão</option>
+  </select>
+  <label class="field-label" for="m-tenure">Tempo na função</label>
+  <select id="m-tenure">
+    <option value="">Selecione...</option>
+    <option>Menos de 2 anos</option>
+    <option>2–5 anos</option>
+    <option>5–10 anos</option>
+    <option>Mais de 10 anos</option>
+  </select>
+  <br><br>
+  <button class="btn" onclick="start()">Começar →</button>
+</div>
+
+<!-- ══ LIKERT / REACTION QUESTIONS ══ -->
+<div class="screen" id="s-q">
+  <div class="topbar">
+    <div class="logo">Skills 2030</div>
+    <div class="stepctr" id="q-ctr"></div>
+  </div>
+  <div class="pg-dots" id="q-dots"></div>
+  <div class="qnum" id="q-num"></div>
+  <div class="qtext" id="q-text"></div>
+  <div id="q-input-area"></div>
+  <div class="nav">
+    <button class="btn btn-ghost" id="q-back" onclick="qNav(-1)">← Anterior</button>
+    <button class="btn" id="q-next" onclick="qNav(1)" disabled>Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ FORCED CHOICE ══ -->
+<div class="screen" id="s-fc">
+  <div class="topbar">
+    <div class="logo">Skills 2030</div>
+    <div class="stepctr" id="fc-ctr"></div>
+  </div>
+  <div class="fc-ctx">⇄ Segunda parte — situações de escolha. Em cada uma, escolha a opção que descreve melhor seu comportamento natural. Não há resposta mais correta que a outra.</div>
+  <div class="qnum" id="fc-num"></div>
+  <div class="fc-stem" id="fc-stem"></div>
+  <div class="fcopts" id="fcopts"></div>
+  <div class="nav">
+    <button class="btn btn-ghost" id="fc-back" onclick="fcNav(-1)">← Anterior</button>
+    <button class="btn" id="fc-next" onclick="fcNav(1)" disabled>Próximo →</button>
+    <span class="nhint" id="fc-hint"></span>
+  </div>
+</div>
+
+<!-- ══ OPEN QUESTION ══ -->
+<div class="screen" id="s-open">
+  <div class="topbar">
+    <div class="logo">Skills 2030</div>
+    <div class="stepctr">Etapa final — opcional</div>
+  </div>
+  <div class="eyebrow">Para terminar</div>
+  <div class="qtext">Qual capacidade você gostaria de desenvolver nos próximos seis meses?</div>
+  <div class="strip" style="margin-bottom:1.25rem">
+    <span class="strip-icon">👁</span>
+    <div class="strip-text">Selecione uma ou mais opções abaixo. Esta resposta é voluntária e não será vinculada ao seu nome.</div>
+  </div>
+  <div class="sk-chips" id="sk-chips"></div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Quer contar por quê? (opcional)</div>
+  <textarea id="open-ans" placeholder="Escreva o que quiser — ou deixe em branco."></textarea>
+  <div class="nav" style="margin-top:1.25rem">
+    <button class="btn" onclick="goToResult()">Ver meu perfil →</button>
+  </div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div class="screen" id="s-result">
+  <div class="topbar">
+    <div class="logo">Skills 2030</div>
+    <div class="stepctr">Resultado</div>
+  </div>
+  <div class="eyebrow">Construindo o time de 2030</div>
+  <div class="hero" style="font-size:22px;margin-bottom:.35rem">Meu mapa de capacidades</div>
+  <div class="body-text" style="font-size:12px;margin-bottom:1rem" id="r-meta"></div>
+  <div class="r-grid" id="r-grid"></div>
+  <div class="r-list" id="r-list"></div>
+  <div class="r-note" id="r-note"></div>
+  <div class="copy-box">
+    <div class="copy-title">Contribuir com o mapa do time</div>
+    <div class="copy-body">Copie o seu resultado e envie para o RH por email ou WhatsApp. Seus dados individuais ficam com você — o que é compartilhado são apenas os scores por capacidade.</div>
+    <div class="copy-preview" id="copy-preview"></div>
+    <div class="copy-btns">
+      <button class="btn btn-copy" id="btn-copy" onclick="copyResult()">📋 Copiar resultado</button>
+      <button class="btn-email" id="btn-email" onclick="openEmail()">✉️ Abrir no email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SENT ══ -->
+<div class="screen" id="s-sent">
+  <div class="topbar">
+    <div class="logo">Skills 2030</div>
+    <div class="stepctr">Enviado</div>
+  </div>
+  <div style="text-align:center;padding-top:1.5rem">
+    <div class="check-circle">✦</div>
+    <div class="eyebrow" style="text-align:center;margin-bottom:.75rem">Resultado copiado</div>
+    <div class="hero" style="font-size:22px;text-align:center;margin-bottom:.75rem">Pronto para enviar</div>
+    <div class="body-text" style="text-align:center;max-width:300px;margin:0 auto 1.5rem">
+      Cole o resultado no email ou WhatsApp para o RH. O time consolidará as respostas e compartilhará os focos de desenvolvimento coletivo.
+    </div>
+    <div class="sent-steps">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Próximo passo</div>
+      <div class="sent-step">1. Abra seu email ou WhatsApp</div>
+      <div class="sent-step">2. Cole o resultado copiado (Ctrl+V)</div>
+      <div class="sent-step">3. Envie para o RH</div>
+    </div>
+    <button class="btn" onclick="copyResult()">📋 Copiar novamente</button>
+  </div>
+</div>
+
+</div><!-- .card-shell -->
+</div><!-- .wrap -->
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const SL = ['','Nunca ou quase nunca','Raramente','Às vezes','Frequentemente','Sempre ou quase sempre'];
+const SN = {
+  s_an: 'Pensamento analítico',
+  s_re: 'Resiliência e agilidade',
+  s_li: 'Liderança e influência',
+  s_cr: 'Pensamento criativo',
+  s_au: 'Motivação e autoconhecimento',
+  s_lt: 'Literacia tecnológica',
+  s_em: 'Empatia e escuta ativa',
+  s_cu: 'Curiosidade e aprendizado',
+  s_ta: 'Gestão de talentos',
+  s_ai: 'AI e big data'
+};
+
+const ITEMS = [
+  {id:'a1',sk:'s_an',type:'likert',t:'Quando recebo informações contraditórias sobre um mesmo assunto, costumo pausar antes de agir para entender o que as diferenças revelam.'},
+  {id:'a2',sk:'s_an',type:'likert',t:'Antes de fechar uma posição sobre algo, verifico se existe um dado ou fato que poderia mudar minha conclusão.'},
+  {id:'a3',sk:'s_an',type:'likert',t:'Quando um projeto não vai como esperado, meu caminho natural é retroceder e examinar o que está acontecendo antes de mudar o rumo.'},
+  {id:'b1',sk:'s_re',type:'reaction',t:'Quando o escopo de um trabalho muda no meio do caminho:',note:'Escolha a opção que melhor descreve o que costuma acontecer na prática.',
+   opts:[
+     {ltr:'A',t:'Paro, reavalio o que mudou e só retomo quando tenho uma base sólida para seguir.',score:3.0},
+     {ltr:'B',t:'Continuo em movimento enquanto processo a mudança — ajusto conforme avanço.',score:5.0},
+     {ltr:'C',t:'Fico travado(a) por um tempo, mas eventualmente retomo o ritmo.',score:1.5},
+     {ltr:'D',t:'Depende da magnitude — mudanças pequenas absorvo na hora, grandes me exigem mais tempo.',score:3.5}
+   ]},
+  {id:'b2',sk:'s_re',type:'likert',t:'Em semanas com muitas demandas simultâneas, consigo manter o foco no que é mais importante sem dispersar.'},
+  {id:'b3',sk:'s_re',type:'reaction',t:'Quando recebo um retorno que contradiz a forma como vim conduzindo algo:',note:'Escolha a opção que melhor descreve o que costuma acontecer na prática.',
+   opts:[
+     {ltr:'A',t:'Processo na hora — reoriento meu esforço sem que isso perturbe muito o meu ritmo.',score:5.0},
+     {ltr:'B',t:'Levo um tempo ruminando, mas depois consigo me reposicionar.',score:2.5},
+     {ltr:'C',t:'Minha reação depende bastante de quem dá o retorno e de como ele chega.',score:3.0},
+     {ltr:'D',t:'Costumo avaliar internamente se o retorno faz sentido antes de mudar qualquer coisa.',score:3.5}
+   ]},
+  {id:'c1',sk:'s_li',type:'likert',t:'Quando preciso que alguém mude de posição ou abrace uma ideia diferente, consigo fazer isso sem precisar usar a autoridade do cargo ou da senioridade.'},
+  {id:'c2',sk:'s_li',type:'likert',t:'Em conversas com pessoas de outras áreas ou funções, costumo sair com um entendimento compartilhado de quem faz o quê a seguir.'},
+  {id:'c3',sk:'s_li',type:'likert',t:'Quando percebo que uma discussão está girando em torno do mesmo ponto sem avançar, tomo alguma iniciativa para mudar isso.'},
+  {id:'d1',sk:'s_cr',type:'likert',t:'Quando uma abordagem não funciona, meu movimento natural é pensar em mais de uma alternativa antes de escolher a próxima.'},
+  {id:'d2',sk:'s_cr',type:'likert',t:'Costumo trazer para o meu trabalho referências que vêm de fora da minha área — cultura, comportamento de consumo, outras indústrias.'},
+  {id:'d3',sk:'s_cr',type:'likert',t:'Me sinto confortável em colocar na mesa uma ideia que ainda não está completamente desenvolvida, sabendo que pode ser ajustada.'},
+  {id:'e1',sk:'s_au',type:'likert',t:'Quando termino uma semana de trabalho intensa, tenho clareza sobre quais tarefas me energizaram e quais me custaram mais.'},
+  {id:'e2',sk:'s_au',type:'likert',t:'Quando minha entrega num período fica abaixo do que eu esperava, consigo identificar o que aconteceu antes de buscar ajuda externa.'},
+  {id:'e3',sk:'s_au',type:'reaction',t:'Quando aparece uma oportunidade que me tira da zona de conforto:',note:'Escolha a opção que melhor descreve o que costuma acontecer na prática.',
+   opts:[
+     {ltr:'A',t:'Avalio os riscos e o que estou assumindo antes de decidir — preciso entender o escopo.',score:3.5},
+     {ltr:'B',t:'Aceito quase sempre — o desconforto costuma ser sinal de que algo relevante está acontecendo.',score:5.0},
+     {ltr:'C',t:'Depende muito do momento e do contexto — às vezes aceito, às vezes prefiro não.',score:3.0},
+     {ltr:'D',t:'Prefiro consolidar o que já faço bem antes de me dispersar em frentes novas.',score:1.5}
+   ]},
+  {id:'f1',sk:'s_lt',type:'likert',t:'Quando começo a usar uma ferramenta digital nova, costumo avançar por conta própria antes de pedir ajuda.'},
+  {id:'f2',sk:'s_lt',type:'likert',t:'Quando me apresentam uma solução tecnológica, consigo avaliar se faz sentido para o meu contexto sem precisar dominar os detalhes técnicos por trás dela.'},
+  {id:'f3',sk:'s_lt',type:'likert',t:'Quando uma plataforma que uso no trabalho recebe uma atualização significativa, me adapto ao novo formato sem que isso represente uma interrupção relevante no meu ritmo.'},
+  {id:'g1',sk:'s_em',type:'likert',t:'Em conversas importantes, consigo ouvir o outro até o fim antes de começar a formular minha resposta.'},
+  {id:'g2',sk:'s_em',type:'likert',t:'Quando discordo de alguém, costumo reformular a posição dessa pessoa em voz alta antes de apresentar a minha.'},
+  {id:'g3',sk:'s_em',type:'likert',t:'Percebo mudanças no estado da conversa — quando alguém ficou desconfortável ou perdeu o interesse — e ajusto minha abordagem com base nisso.'},
+  {id:'h1',sk:'s_cu',type:'likert',t:'Nos últimos três meses, aprendi algo relevante para o meu trabalho por iniciativa própria — sem que ninguém me pedisse.'},
+  {id:'h2',sk:'s_cu',type:'likert',t:'Quando leio ou ouço algo que contradiz o que eu acreditava sobre meu setor ou função, fico curioso(a) em entender o porquê da diferença.'},
+  {id:'h3',sk:'s_cu',type:'likert',t:'Trago para o time ou para conversas com colegas referências ou informações que encontrei fora do ambiente de trabalho.'},
+  {id:'i1',sk:'s_ta',type:'likert',t:'Com que frequência percebo que um colega tem uma habilidade que não está aparecendo nas tarefas que ele recebe?'},
+  {id:'i2',sk:'s_ta',type:'likert',t:'Quando dou retorno sobre o trabalho de alguém, consigo nomear comportamentos específicos que observei — não características da pessoa.'},
+  {id:'i3',sk:'s_ta',type:'likert',t:'Quando distribuo ou sugiro tarefas num projeto, levo em conta o que cada pessoa faz com mais naturalidade.'},
+  {id:'j1',sk:'s_ai',type:'likert',t:'Já usei alguma ferramenta de inteligência artificial para apoiar uma tarefa do meu trabalho — mesmo que de forma pontual.'},
+  {id:'j2',sk:'s_ai',type:'likert',t:'Quando tenho acesso a um relatório ou painel com muitos números, sei identificar quais deles são relevantes para a decisão que preciso tomar.'},
+  {id:'j3',sk:'s_ai',type:'likert',t:'Quando um sistema ou ferramenta me entrega uma análise pronta, verifico se o resultado faz sentido antes de usá-lo.'}
+];
+
+const FC = [
+  {stem:'Num projeto com prazo curto e informações incompletas, seu movimento mais natural é:',opts:[{t:'Estruturar o que já sei, mapear o que falta e tomar uma decisão com o que tenho disponível.',sk:'s_an'},{t:'Manter o processo em movimento e ajustar o rumo conforme novas informações chegam.',sk:'s_re'}]},
+  {stem:'Ao aprender algo novo relacionado ao seu trabalho, você tende a:',opts:[{t:'Explorar por conta própria — testar, errar, entender como funciona na prática.',sk:'s_lt'},{t:'Conectar o conteúdo com o que já sei e pensar logo em como aplicar com o time.',sk:'s_cu'}]},
+  {stem:'Quando um cliente ou colega traz uma demanda inesperada, você costuma:',opts:[{t:'Ouvir com atenção, entender o que está por trás do pedido e refletir antes de responder.',sk:'s_em'},{t:'Avaliar o impacto no que já está em andamento e propor uma forma de encaixar ou priorizar.',sk:'s_an'}]},
+  {stem:'Numa situação em que você precisa engajar alguém numa ideia que ainda não é consenso, você:',opts:[{t:'Constrói o argumento com dados ou referências que respaldem a proposta.',sk:'s_an'},{t:'Investe na relação e no contexto — ajuda a pessoa a chegar à mesma conclusão pelo próprio raciocínio.',sk:'s_li'}]},
+  {stem:'Quando percebe que alguém do time tem potencial em algo que ainda não está sendo aproveitado, você:',opts:[{t:'Menciona isso diretamente — para a pessoa ou para quem distribui as tarefas.',sk:'s_ta'},{t:'Cria uma oportunidade concreta para que esse potencial apareça num projeto real.',sk:'s_cr'}]},
+  {stem:'Quando precisa gerar uma nova ideia ou solução para um problema do time, você tende a:',opts:[{t:'Conversar com as pessoas envolvidas primeiro — entender perspectivas antes de propor qualquer coisa.',sk:'s_em'},{t:'Explorar referências e estímulos externos — o que existe de diferente que poderia inspirar a resposta.',sk:'s_cr'}]},
+  {stem:'Quando enfrenta uma semana de alta pressão e muita coisa mudando ao mesmo tempo, você:',opts:[{t:'Faz uma pausa para entender o que está gerando o desconforto e o que está em seu controle.',sk:'s_au'},{t:'Reorganiza o que precisa ser feito e retoma o movimento sem se prender ao que mudou.',sk:'s_re'}]},
+  {stem:'Quando precisa desenvolver alguém do time, sua inclinação natural é:',opts:[{t:'Trabalhar diretamente com a pessoa — dar retorno, criar oportunidades, acompanhar de perto.',sk:'s_ta'},{t:'Criar o ambiente certo — distribuir as tarefas de forma que as pessoas cresçam pelo que fazem.',sk:'s_li'}]},
+  {stem:'Quando usa uma ferramenta digital que gerou uma análise ou recomendação, você:',opts:[{t:'Explora a ferramenta para entender como ela chegou àquele resultado.',sk:'s_lt'},{t:'Cruza o resultado com outras fontes ou com o que já sabe sobre o contexto.',sk:'s_ai'}]},
+  {stem:'Quando precisa aprofundar seu conhecimento sobre um tema novo, você:',opts:[{t:'Busca fontes e referências ativamente — artigos, pessoas, eventos — por curiosidade genuína.',sk:'s_cu'},{t:'Organiza o que já sei e identifica exatamente qual lacuna preciso preencher para avançar.',sk:'s_an'}]}
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let items=[], cur=0, ans={}, fcCur=0, fcAns={}, openSel=new Set(), computedScores=[], resultText='';
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
+function prog(p){document.getElementById('hz').classList.add('on');document.getElementById('hf').style.width=Math.round(p)+'%';}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));setTimeout(()=>document.getElementById(id).classList.add('active'),25);}
+
+// ── START ─────────────────────────────────────────────────────────────────
+function start(){
+  const r=document.getElementById('m-role').value, t=document.getElementById('m-tenure').value;
+  if(!r||!t){alert('Por favor selecione sua função e tempo na função.');return;}
+  items=shuffle(ITEMS); cur=0; ans={}; fcCur=0; fcAns={}; openSel=new Set();
+  show('s-q'); renderQ();
+}
+
+// ── DOTS ──────────────────────────────────────────────────────────────────
+function dots(){
+  document.getElementById('q-dots').innerHTML=items.map((it,i)=>{
+    const cl=i<cur?'dot done':i===cur?'dot cur':it.type==='reaction'?'dot spec':'dot';
+    return `<div class="${cl}"></div>`;
+  }).join('');
+}
+
+// ── LIKERT / REACTION RENDER ──────────────────────────────────────────────
+function renderQ(){
+  const it=items[cur], tot=items.length;
+  document.getElementById('q-ctr').textContent=`${cur+1} de ${tot}`;
+  document.getElementById('q-num').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('q-text').textContent=it.t;
+  document.getElementById('q-back').style.display=cur===0?'none':'';
+  const nb=document.getElementById('q-next');
+  nb.textContent=cur===tot-1?'Continuar →':'Próximo →';
+  nb.disabled=ans[it.id]===undefined;
+  dots(); prog(cur/tot*55+2);
+  it.type==='reaction' ? renderReaction(it) : renderLikert(it);
+}
+
+function renderLikert(it){
+  const sv=ans[it.id];
+  document.getElementById('q-input-area').innerHTML=`
+    <div class="lopts">${SL.slice(1).map((lb,i)=>{const v=i+1,s=sv===v;
+      return`<div class="lopt${s?' sel':''}" onclick="selL(${v})" data-v="${v}">
+        <div class="ldot-wrap"><div class="ldot-inner"></div></div>
+        <div class="llbl">${lb}</div>
+      </div>`;
+    }).join('')}</div>
+    <div class="scale-ends"><span>← Nunca</span><span>Sempre →</span></div>`;
+}
+
+function renderReaction(it){
+  const sv=ans[it.id];
+  const so=shuffle(it.opts.map((o,i)=>({...o,origIdx:i})));
+  document.getElementById('q-input-area').innerHTML=`
+    <div class="react-note">✤ ${it.note}</div>
+    <div class="ropts">${so.map((o,i)=>`
+      <div class="ropt${sv===o.origIdx?' sel':''}" onclick="selReact(${o.origIdx})" data-i="${o.origIdx}">
+        <div class="rltr">${String.fromCharCode(65+i)}</div>
+        <div class="rtxt">${o.t}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function selL(v){
+  ans[items[cur].id]=v;
+  document.querySelectorAll('.lopt').forEach(el=>el.classList.toggle('sel',parseInt(el.dataset.v)===v));
+  document.getElementById('q-next').disabled=false;
+}
+function selReact(oi){
+  ans[items[cur].id]=oi;
+  document.querySelectorAll('.ropt').forEach(el=>el.classList.toggle('sel',parseInt(el.dataset.i)===oi));
+  document.getElementById('q-next').disabled=false;
+}
+function qNav(d){
+  if(d===1){cur<items.length-1?(cur++,renderQ()):(show('s-fc'),renderFC());}
+  else{cur>0&&(cur--,renderQ());}
+}
+
+// ── FORCED CHOICE ─────────────────────────────────────────────────────────
+function renderFC(){
+  const fc=FC[fcCur], sv=fcAns[fcCur], tot=FC.length;
+  document.getElementById('fc-ctr').textContent=`Situação ${fcCur+1} de ${tot}`;
+  document.getElementById('fc-num').textContent=`${fcCur+1} / ${tot}`;
+  document.getElementById('fc-stem').textContent=fc.stem;
+  document.getElementById('fcopts').innerHTML=fc.opts.map((o,i)=>`
+    <div class="fcopt${sv===i?' sel':''}" onclick="selFC(${i})" data-i="${i}">
+      <div class="fcltr">${String.fromCharCode(65+i)}</div>
+      <div class="fctxt">${o.t}</div>
+    </div>`).join('');
+  document.getElementById('fc-back').style.display=fcCur===0?'none':'';
+  const fn=document.getElementById('fc-next');
+  fn.textContent=fcCur===FC.length-1?'Última etapa →':'Próximo →';
+  fn.disabled=sv===undefined;
+  document.getElementById('fc-hint').textContent=`${fcCur+1} de ${tot}`;
+  prog(57+fcCur/FC.length*28);
+}
+function selFC(i){fcAns[fcCur]=i;document.querySelectorAll('.fcopt').forEach((el,idx)=>el.classList.toggle('sel',idx===i));document.getElementById('fc-next').disabled=false;}
+function fcNav(d){
+  if(d===1){fcCur<FC.length-1?(fcCur++,renderFC()):(show('s-open'),buildChips(),prog(88));}
+  else{fcCur>0?(fcCur--,renderFC()):(show('s-q'),renderQ());}
+}
+
+// ── OPEN QUESTION ─────────────────────────────────────────────────────────
+function buildChips(){
+  document.getElementById('sk-chips').innerHTML=shuffle(Object.keys(SN)).map(k=>
+    `<div class="sk-chip${openSel.has(k)?' sel':''}" onclick="toggleChip(this,'${k}')">${SN[k]}</div>`
+  ).join('');
+}
+function toggleChip(el,k){openSel.has(k)?(openSel.delete(k),el.classList.remove('sel')):(openSel.add(k),el.classList.add('sel'));}
+
+// ── SCORE CALC ────────────────────────────────────────────────────────────
+function calcScores(){
+  return Object.keys(SN).map(sk=>{
+    const its=items.filter(i=>i.sk===sk);
+    let total=0, count=0;
+    its.forEach(it=>{
+      const v=ans[it.id];
+      if(v===undefined)return;
+      total+=it.type==='reaction'?it.opts[v].score:v;
+      count++;
+    });
+    const avg=count>0?total/count:0;
+    const bonus=FC.reduce((acc,fc,fi)=>{
+      const ch=fcAns[fi];
+      return(ch!==undefined&&fc.opts[ch].sk===sk)?acc+.12:acc;
+    },0);
+    return{sk, avg:Math.min(5,parseFloat((avg+bonus).toFixed(2)))};
+  });
+}
+
+// ── RESULT TEXT ───────────────────────────────────────────────────────────
+function buildResultText(scores){
+  const role=document.getElementById('m-role').value;
+  const tenure=document.getElementById('m-tenure').value;
+  const date=new Date().toLocaleDateString('pt-BR');
+  const sorted=[...scores].sort((a,b)=>a.avg-b.avg);
+  const wishList=[...openSel].map(k=>SN[k]).join(', ')||'—';
+  const openText=document.getElementById('open-ans').value.trim()||'—';
+  const bar=v=>'█'.repeat(Math.round(v))+'░'.repeat(5-Math.round(v))+` ${v.toFixed(1)}`;
+  return [
+    '═══════════════════════════════════════════',
+    '  SKILLS 2030 — Sondagem de Capacidades',
+    '  WEF Future of Jobs Report 2025',
+    '═══════════════════════════════════════════',
+    `Função: ${role}`,
+    `Tempo na função: ${tenure}`,
+    `Data: ${date}`,
+    '───────────────────────────────────────────',
+    'MAPA DE CAPACIDADES (menor → maior score)',
+    '',
+    ...sorted.map(s=>`${SN[s.sk].padEnd(32)} ${bar(s.avg)}`),
+    '',
+    '───────────────────────────────────────────',
+    `Média global: ${(scores.reduce((a,s)=>a+s.avg,0)/scores.length).toFixed(2)} / 5.00`,
+    `Quero desenvolver: ${wishList}`,
+    `Comentário: ${openText}`,
+    '═══════════════════════════════════════════',
+    '⚠ Resultado individual e anônimo.',
+    '  RH: consolidar scores agregados —',
+    '  não compartilhar esta mensagem com gestores.',
+    '═══════════════════════════════════════════',
+  ].join('\n');
+}
+
+// ── SHOW RESULT ───────────────────────────────────────────────────────────
+function goToResult(){
+  prog(100); show('s-result');
+  computedScores=calcScores();
+  const role=document.getElementById('m-role').value, tenure=document.getElementById('m-tenure').value;
+  document.getElementById('r-meta').textContent=`${role} · ${tenure} · ${items.length} afirmações + ${FC.length} situações de escolha`;
+  const all=computedScores.reduce((a,s)=>a+s.avg,0)/computedScores.length;
+  document.getElementById('r-grid').innerHTML=`
+    <div class="r-sc"><div class="r-scv">${all.toFixed(1)}</div><div class="r-scl">Média geral</div></div>
+    <div class="r-sc"><div class="r-scv">${computedScores.filter(s=>s.avg<2.5).length}</div><div class="r-scl">Focos de desenvolvimento</div></div>
+    <div class="r-sc"><div class="r-scv">${computedScores.filter(s=>s.avg>=4).length}</div><div class="r-scl">Capacidades consolidadas</div></div>`;
+  const sorted=[...computedScores].sort((a,b)=>a.avg-b.avg);
+  document.getElementById('r-list').innerHTML=sorted.map(s=>{
+    const p=Math.round(s.avg/5*100);
+    const tc=s.avg<2.5?'low':s.avg<4?'mid':'';
+    const tl=s.avg<2.5?'Desenvolver':s.avg>=4?'Consolidado':'Em construção';
+    const wish=openSel.has(s.sk)?'<span style="font-size:10px;color:var(--cyan);margin-left:5px">★</span>':'';
+    return`<div class="r-row">
+      <div class="r-sname">${SN[s.sk]}${wish}</div>
+      <span class="r-tag ${tc}">${tl}</span>
+      <div class="r-bw"><div class="r-b" style="width:${p}%"></div></div>
+      <div class="r-val">${s.avg.toFixed(1)}</div>
+    </div>`;
+  }).join('');
+  const top=sorted[0];
+  const wishNote=openSel.size>0?` Interesse em desenvolver: ${[...openSel].map(k=>SN[k]).join(', ')}.`:'';
+  document.getElementById('r-note').innerHTML=`<strong>Maior oportunidade identificada:</strong> ${SN[top.sk]} (${top.avg.toFixed(1)}/5).${wishNote}`;
+  resultText=buildResultText(computedScores);
+  document.getElementById('copy-preview').textContent=resultText;
+
+  // Email href
+  const subject=encodeURIComponent('Skills 2030 — Minha sondagem de capacidades');
+  const body=encodeURIComponent(resultText);
+  document.getElementById('btn-email').href=`mailto:?subject=${subject}&body=${body}`;
+  document.getElementById('btn-email').setAttribute('onclick','return true;');
+}
+
+// ── COPY ──────────────────────────────────────────────────────────────────
+async function copyResult(){
+  try{
+    await navigator.clipboard.writeText(resultText);
+  }catch(e){
+    const ta=document.createElement('textarea');
+    ta.value=resultText;
+    ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  const btn=document.getElementById('btn-copy');
+  if(btn){btn.textContent='✓ Copiado!';btn.classList.add('copied');}
+  setTimeout(()=>show('s-sent'),700);
+}
+
+function openEmail(){
+  const subject=encodeURIComponent('Skills 2030 — Minha sondagem de capacidades');
+  const body=encodeURIComponent(resultText);
+  window.open(`mailto:?subject=${subject}&body=${body}`,'_blank');
+}
+
+// ── PARTICLES ─────────────────────────────────────────────────────────────
+(function(){
+  const cv=document.getElementById('particles'), ctx=cv.getContext('2d');
+  let W, H, pts=[];
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+  function mk(){return{x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.4+.4};}
+  function init(){resize();pts=Array.from({length:45},mk);}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<pts.length;i++){
+      const p=pts[i];
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(15,164,164,.5)';ctx.fill();
+      for(let j=i+1;j<pts.length;j++){
+        const q=pts[j],d=Math.hypot(p.x-q.x,p.y-q.y);
+        if(d<120){
+          ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+          ctx.strokeStyle=`rgba(15,164,164,${(1-d/120)*.16})`;
+          ctx.lineWidth=.5;ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',init);
+  init(); draw();
+})();
+</script>
+</body>
+</html>
